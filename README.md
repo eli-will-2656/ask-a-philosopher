@@ -4,15 +4,11 @@ Gradio Space that uses [Sentence Transformers](https://www.sbert.net/docs/huggin
 
 
 
----
-title: MVP 1.2
-emoji: 🐠
-colorFrom: red
-colorTo: purple
-sdk: gradio
-sdk_version: 3.3.1
-app_file: app.py
-pinned: false
----
 
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+| title | sdk | sdk_version | app_file | 
+| ------------- | ------------- |------------- | ------------- |
+|  MVP 1.2 | gradio  | 3.3.1 | app.py | 
+
+
+
+
