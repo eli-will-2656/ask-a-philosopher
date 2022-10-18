@@ -1,5 +1,5 @@
 # Ask a Philosopher
-![image](https://user-images.githubusercontent.com/104855506/196497958-f9e3a750-8571-4cc7-ae86-ccbf346a4564.png)
+![image](https://user-images.githubusercontent.com/104855506/196498557-517cfca3-9334-4e05-a2b8-521747828f4f.png)
 
 "Ask a Philosopher" is a Gradio Space that uses [Sentence Transformers](https://www.sbert.net/docs/hugging_face.html) and [language Models](https://huggingface.co/distilgpt2) to respond to questions.
 
