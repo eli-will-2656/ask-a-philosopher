@@ -10,6 +10,7 @@ nltk.download("punkt")
 # Loading in dataframes
 krishnamurti_df = pd.read_json("krishnamurti_df.json")
 stoic_df = pd.read_json("stoic_df.json")
+alan_df = pd.read_json("alan-watts_df.json")
 
 # Loading in sentence_similarity model
 sentence_similarity_model = "all-mpnet-base-v2"
@@ -17,18 +18,28 @@ model = SentenceTransformer(sentence_similarity_model)
 
 # Loading in text-generation models
 stoic_generator = pipeline("text-generation", model="eliwill/stoic-generator-10e")
-krishnamurti_generator =  pipeline("text-generation", model="distilgpt2")
+krishnamurti_generator =  pipeline("text-generation", model="eliwill/distilgpt2-finetuned-final-project")
+alan_generator = pipeline("text-generation", model="eliwill/alan-watts-8e")
+
 
 # Creating philosopher dictionary
 philosopher_dictionary = {
-    "stoic": {
+    "Marcus Aurelius": {
         "generator": stoic_generator,
-        "dataframe": stoic_df
+        "dataframe": stoic_df,
+        "image": "marcus-aurelius.jpg"
         },
 
-    "krishnamurti": {
+    "Krishnamurti": {
         "generator": krishnamurti_generator,
-        "dataframe": krishnamurti_df
+        "dataframe": krishnamurti_df,
+        "image": "krishnamurti.jpg"
+        },
+   
+    "Alan Watts": {
+        "generator": alan_generator ,
+        "dataframe": alan_df ,
+        "image": "rsz_1alan_watts.jpg"
         }
 }
 
@@ -43,21 +54,21 @@ def ask_philosopher(philosopher, question):
   return answer
 
 def get_similar_quotes(philosopher, question):
-  """ Return top 3 most similar quotes to the question from a philosopher's dataframe """
+  """ Return top 5 most similar quotes to the question from a philosopher's dataframe """
   df = philosopher_dictionary[philosopher]['dataframe']
   question_embedding = model.encode(question)
   sims = [util.dot_score(question_embedding, quote_embedding) for quote_embedding in df['Embedding']]
-  ind = np.argpartition(sims, -4)[-4:]
+  ind = np.argpartition(sims, -5)[-5:]
   similar_sentences = [df['quote'][i] for i in ind]
-  top4quotes = pd.DataFrame(data = similar_sentences, columns=["Quotes"], index=range(1,5))
-  top4quotes['Quotes'] = top4quotes['Quotes'].str[:-1].str[:250] + "..."
-  return top4quotes
+  top5quotes = pd.DataFrame(data = similar_sentences, columns=["Quotes"], index=range(1,6))
+  top5quotes['Quotes'] = top5quotes['Quotes'].str[:-1].str[:250] + "..."
+  return top5quotes
 
 def main(question, philosopher):
-  out_image = "marcus-aurelius.jpg"
+  out_image = philosopher_dictionary[philosopher]['image']
   return ask_philosopher(philosopher, question), get_similar_quotes(philosopher, question), out_image
   
-with gr.Blocks(css=".gradio-container {background-image: url('file=mountains_resized.jpg')} # title {color: #F0FFFF}") as demo:
+with gr.Blocks(css=".gradio-container {background-image: url('file=blue_mountains.jpg')} # title {color: #F0FFFF}") as demo:
     gr.Markdown("""
     # Ask a Philsopher
     """, 
@@ -67,7 +78,7 @@ with gr.Blocks(css=".gradio-container {background-image: url('file=mountains_res
     with gr.Row():
         with gr.Column():
             inp1 = gr.Textbox(placeholder="Place your question here...", label="Ask a question", elem_id="title")
-            inp2 = gr.Dropdown(choices=["stoic", "krishnamurti"], value="stoic", label="Choose a philosopher")
+            inp2 = gr.Dropdown(choices=["Alan Watts", "Marcus Aurelius", "Krishnamurti"], value="Marcus Aurelius", label="Choose a philosopher")
           
         out1 = gr.Textbox(
                     lines=3, 
@@ -76,12 +87,18 @@ with gr.Blocks(css=".gradio-container {background-image: url('file=mountains_res
                 )
           
     with gr.Row():
-        out_image = gr.Image(label="Picture")
+        out_image = gr.Image(label="Picture", image_mode="L")
         out2 = gr.DataFrame(
                     headers=["Quotes"],
                     max_rows=5,
                     interactive=False,
-                    wrap=True)
+                    wrap=True,
+                    value=[["When you arise in the morning, think of what a precious privilege it is to be alive – to breathe, to think, to enjoy, to love."],
+                             ["Each day provides its own gifts."],
+                             ["Only time can heal what reason cannot."],
+                             ["He who is brave is free."],
+                             ["First learn the meaning of what you say, and then speak."]]
+                             )
                         
     btn = gr.Button("Run")
     btn.click(fn=main, inputs=[inp1,inp2], outputs=[out1,out2,out_image])
